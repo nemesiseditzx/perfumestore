@@ -438,9 +438,10 @@ function doLogin() {
 }
 
 function initDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  goPage('dashboard');
   loadDashboard();
 }
-
   function goPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
