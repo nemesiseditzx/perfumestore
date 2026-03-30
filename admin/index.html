@@ -440,6 +440,13 @@ function doLogin() {
 function initDashboard() {
   loadDashboard();
 }
+
+  function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById('page-'+id).classList.add('active');
+}
   
 // ─── API ───
 const API = "https://perfumestore-backend-production.up.railway.app";
