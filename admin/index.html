@@ -875,6 +875,14 @@ function flashMsg(id, msg) {
 }
 </script>
   <script>
+
+    function USD(amount){
+  return amount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD"
+  });
+}
+    
 // ─── API CONFIG ───
 const API = "https://perfumestore-backend-production.up.railway.app";
 
