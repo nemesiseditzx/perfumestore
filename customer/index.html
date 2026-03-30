@@ -930,34 +930,70 @@ function openCheckout(){
 
 function closeCheckout(){document.getElementById('co-modal').classList.remove('on');document.body.style.overflow='';}
 
-function placeOrder(){
+async function placeOrder(){
   const name=document.getElementById('n-name').value.trim();
   const phone=document.getElementById('n-phone').value.trim();
   const shop=document.getElementById('n-shop').value.trim();
   const addr=document.getElementById('n-addr').value.trim();
-  if(!name||!phone||!shop||!addr){toast('Please fill all required fields');return;}
-  const d=getData();
-  const oid='ORD-'+d.nextOrderId;
+
+  if(!name||!phone||!shop||!addr){
+    toast('Please fill all required fields');
+    return;
+  }
+
   const order={
-    id:oid,num:d.nextOrderId,
-    customer:{name,phone,shop,address:addr,district:document.getElementById('n-dist').value,payment:document.getElementById('n-pay').value,notes:document.getElementById('n-notes').value},
-    items:cart.map(i=>({id:i.id,name:i.name,cat:i.cat,price:i.price,qty:i.qty,total:i.price*i.qty})),
-    total:cartTotal(),status:'pending',date:new Date().toISOString(),
-    statusHistory:[{status:'pending',time:new Date().toISOString()}]
+    id:'ORD-'+Date.now(),
+    customer:{
+      name,
+      phone,
+      shop,
+      address:addr,
+      district:document.getElementById('n-dist').value,
+      payment:document.getElementById('n-pay').value,
+      notes:document.getElementById('n-notes').value
+    },
+    items:cart.map(i=>({
+      id:i.id,
+      name:i.name,
+      price:i.price,
+      qty:i.qty
+    })),
+    total:cartTotal(),
+    status:'pending',
+    date:new Date().toISOString()
   };
-  d.orders.push(order);d.nextOrderId++;
-  order.items.forEach(oi=>{const p=d.products.find(x=>x.id===oi.id);if(p&&p.stock>=oi.qty)p.stock-=oi.qty;});
-  localStorage.setItem(SK,JSON.stringify(d));
-  cart=[];updateCart();renderProducts();
-  document.getElementById('co-title').textContent='';
-  document.getElementById('co-body').innerHTML=`
-    <div class="success-view">
-      <div class="sv-icon">🎉</div>
-      <div class="sv-title">Order Placed!</div>
-      <div class="sv-id">${oid}</div>
-      <p class="sv-msg">Thank you <strong>${name}</strong>!<br>We'll contact you at <strong>${phone}</strong> within 2 hours to confirm payment and delivery.</p>
-      <button class="sv-close" onclick="closeCheckout()">Continue Shopping</button>
-    </div>`;
+
+  try{
+    const res = await fetch("https://perfumestore-backend-production.up.railway.app/orders",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(order)
+    });
+
+    if(!res.ok){
+      throw new Error("Order failed");
+    }
+
+    // SUCCESS
+    cart=[];
+    updateCart();
+    renderProducts();
+
+    document.getElementById('co-body').innerHTML=`
+      <div class="success-view">
+        <div class="sv-icon">🎉</div>
+        <div class="sv-title">Order Placed!</div>
+        <div class="sv-id">${order.id}</div>
+        <p class="sv-msg">Thank you <strong>${name}</strong>! We'll contact you soon.</p>
+        <button class="sv-close" onclick="closeCheckout()">Continue Shopping</button>
+      </div>`;
+      
+  }catch(err){
+    toast("Order failed. Try again.");
+    console.error(err);
+  }
 }
 
 // ── TOAST ──
