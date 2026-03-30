@@ -900,84 +900,73 @@ function openCart(){renderCartPanel();document.getElementById('co').classList.ad
 function closeCart(){document.getElementById('co').classList.remove('on');document.getElementById('cp').classList.remove('on');document.body.style.overflow='';}
 
 // ── CHECKOUT ──
-function openCheckout(){
-  closeCart();
-  const items=cart.map(i=>`<div class="co-sum-item"><span>${i.name} × ${i.qty}</span><span>$${(i.price*i.qty).toLocaleString()}</span></div>`).join('');
-  document.getElementById('co-title').textContent='Place Your Order';
-  document.getElementById('co-body').innerHTML=`
-    <div class="co-summary">
-      <div class="co-sum-title">Order Summary</div>
-      ${items}
-      <div class="co-sum-total"><span>Total</span><span>$${cartTotal().toLocaleString()}</span></div>
+document.getElementById('co-body').innerHTML = `
+  <div class="co-summary">
+    <div class="co-sum-title">Order Summary</div>
+    ${items}
+    <div class="co-sum-total">
+      <span>Total</span>
+      <span>$${cartTotal().toLocaleString()}</span>
     </div>
-    <div class="co-grid">
-      <div class="fg2"><label>Your Name *</label><input id="n-name" type="text" placeholder="Full name"></div>
-      <div class="fg2"><label>Phone / WhatsApp *</label><input id="n-phone" type="text" placeholder="+880 ..."></div>
+  </div>
+
+  <!-- ORDER TYPE -->
+  <div class="fg2">
+    <label>Order Type *</label>
+    <select id="order-type" onchange="toggleOrderType()">
+      <option value="delivery">Delivery</option>
+      <option value="pickup">Store Pickup</option>
+    </select>
+  </div>
+
+  <div class="co-grid">
+    <div class="fg2">
+      <label>Your Name *</label>
+      <input id="n-name" type="text" placeholder="Full name">
     </div>
-    <div class="fg2"><label>Shop / Business Name *</label><input id="n-shop" type="text" placeholder="Your shop name"></div>
-    <div class="fg2"><label>Delivery Address *</label><input id="n-addr" type="text" placeholder="Full delivery address"></div>
-    <div class="co-grid">
-      <div class="fg2"><label>District</label><input id="n-dist" type="text" placeholder="e.g. Chittagong"></div>
-      <div class="fg2"><label>Payment Method</label>
-        <select id="n-pay"><option value="store">Pay at Store</option>
-<option value="card">Card Payment</option>
-<option value="cod">Cash on Delivery</option>
-      </div>
+
+    <div class="fg2">
+      <label>Phone *</label>
+      <input id="n-phone" type="text" placeholder="+1 ...">
     </div>
-    <div class="fg2"><label>Notes (optional)</label><textarea id="n-notes" placeholder="Any special requests..."></textarea></div>
-    <button class="place-btn" onclick="placeOrder()">✓ Place Order — $${cartTotal().toLocaleString()}</button>`;
-  document.getElementById('co-modal').classList.add('on');
-  document.body.style.overflow='hidden';
-}
+  </div>
 
-function closeCheckout(){document.getElementById('co-modal').classList.remove('on');document.body.style.overflow='';}
+  <div class="fg2">
+    <label>Shop / Business Name *</label>
+    <input id="n-shop" type="text">
+  </div>
 
-async function placeOrder(){
-  const name=document.getElementById('n-name').value.trim();
-  const phone=document.getElementById('n-phone').value.trim();
-  const shop=document.getElementById('n-shop').value.trim();
-  const addr=document.getElementById('n-addr').value.trim();
+  <!-- ADDRESS (HIDE FOR PICKUP) -->
+  <div class="fg2" id="address-field">
+    <label>Delivery Address *</label>
+    <input id="n-addr" type="text">
+  </div>
 
-  if(!name||!phone||!shop||!addr){
-    toast('Please fill all required fields');
-    return;
-  }
+  <div class="co-grid">
+    <div class="fg2">
+      <label>District</label>
+      <input id="n-dist" type="text">
+    </div>
 
-  const order={
-    id:'ORD-'+Date.now(),
-    customer:{
-      name,
-      phone,
-      shop,
-      address:addr,
-      district:document.getElementById('n-dist').value,
-      payment:document.getElementById('n-pay').value,
-      notes:document.getElementById('n-notes').value
-    },
-    items:cart.map(i=>({
-      id:i.id,
-      name:i.name,
-      price:i.price,
-      qty:i.qty
-    })),
-    total:cartTotal(),
-    status:'pending',
-    date:new Date().toISOString()
-  };
+    <div class="fg2">
+      <label>Payment Method</label>
+      <select id="n-pay">
+        <option value="store">Pay at Store</option>
+        <option value="card">Card Payment</option>
+        <option value="cod">Cash on Delivery</option>
+      </select>
+    </div>
+  </div>
 
-  try{
-    const res = await fetch("https://perfumestore-backend-production.up.railway.app/orders",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify(order)
-    });
+  <div class="fg2">
+    <label>Notes</label>
+    <textarea id="n-notes"></textarea>
+  </div>
 
-    if(!res.ok){
-      throw new Error("Order failed");
-    }
-
+  <button class="place-btn" onclick="placeOrder()">
+    Place Order — $${cartTotal().toLocaleString()}
+  </button>
+`;
     // SUCCESS
     cart=[];
     updateCart();
