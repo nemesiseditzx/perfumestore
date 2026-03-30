@@ -425,6 +425,22 @@ tr:last-child td{border-bottom:none;}
 
 <script>
 
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+
+  if (u === "admin" && p === "admin123") {
+    document.getElementById('login-screen').style.display = 'none';
+    initDashboard();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function initDashboard() {
+  loadDashboard();
+}
+  
 // ─── API ───
 const API = "https://perfumestore-backend-production.up.railway.app";
 
