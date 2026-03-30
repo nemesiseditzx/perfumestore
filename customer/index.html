@@ -1076,16 +1076,27 @@ const order = {
     updateCart();
     renderProducts();
 
-    document.getElementById('co-body').innerHTML=`
-      <div class="success-view">
-        <div class="sv-icon">🎉</div>
-        <div class="sv-title">Order Placed!</div>
-        <div class="sv-id">${order.id}</div>
-        <p class="sv-msg">Thank you <strong>${name}</strong>! We'll contact you soon.</p>
-        <button class="sv-close" onclick="closeCheckout()">Continue Shopping</button>
-      </div>`;
+   document.getElementById('co-body').innerHTML = `
+  <div class="success-view">
+    <div class="sv-icon">🎉</div>
+    <div class="sv-title">Order Placed!</div>
+    <div class="sv-id">${order.id}</div>
+    <p class="sv-msg">
+      Thank you <strong>${name}</strong>! 
+      We'll contact you soon.
+    </p>
+    <button class="sv-close" onclick="closeCheckout()">
+      Continue Shopping
+    </button>
+  </div>
+`;
       
-  }catch(err){
+async function placeOrder(){
+  try {
+
+    // ALL your code here
+
+  } catch(err){
     toast("Order failed. Try again.");
     console.error(err);
   }
