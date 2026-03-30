@@ -673,15 +673,86 @@ footer{background:#040406;padding:80px 60px 40px;border-top:1px solid rgba(201,1
 
 <script>
 
-  function toggleOrderType(){
-  const type = document.getElementById('order-type').value;
-  const addr = document.getElementById('address-field');
+ function openCheckout(){
+  closeCart();
 
-  if(type === 'pickup'){
-    addr.style.display = 'none';
-  } else {
-    addr.style.display = 'block';
-  }
+  const items = cart.map(i => `
+    <div class="co-sum-item">
+      <span>${i.name} × ${i.qty}</span>
+      <span>$${(i.price*i.qty).toLocaleString()}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('co-title').textContent = 'Place Your Order';
+
+  document.getElementById('co-body').innerHTML = `
+    <div class="co-summary">
+      <div class="co-sum-title">Order Summary</div>
+      ${items}
+      <div class="co-sum-total">
+        <span>Total</span>
+        <span>$${cartTotal().toLocaleString()}</span>
+      </div>
+    </div>
+
+    <div class="fg2">
+      <label>Order Type *</label>
+      <select id="order-type" onchange="toggleOrderType()">
+        <option value="delivery">Delivery</option>
+        <option value="pickup">Store Pickup</option>
+      </select>
+    </div>
+
+    <div class="co-grid">
+      <div class="fg2">
+        <label>Your Name *</label>
+        <input id="n-name" type="text">
+      </div>
+
+      <div class="fg2">
+        <label>Phone *</label>
+        <input id="n-phone" type="text">
+      </div>
+    </div>
+
+    <div class="fg2">
+      <label>Shop / Business Name *</label>
+      <input id="n-shop" type="text">
+    </div>
+
+    <div class="fg2" id="address-field">
+      <label>Delivery Address *</label>
+      <input id="n-addr" type="text">
+    </div>
+
+    <div class="co-grid">
+      <div class="fg2">
+        <label>District</label>
+        <input id="n-dist" type="text">
+      </div>
+
+      <div class="fg2">
+        <label>Payment Method</label>
+        <select id="n-pay">
+          <option value="store">Pay at Store</option>
+          <option value="card">Card Payment</option>
+          <option value="cod">Cash on Delivery</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg2">
+      <label>Notes</label>
+      <textarea id="n-notes"></textarea>
+    </div>
+
+    <button class="place-btn" onclick="placeOrder()">
+      Place Order — $${cartTotal().toLocaleString()}
+    </button>
+  `;
+
+  document.getElementById('co-modal').classList.add('on');
+  document.body.style.overflow = 'hidden';
 }
   
 // ── DATA ──
