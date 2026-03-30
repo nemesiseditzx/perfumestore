@@ -672,6 +672,18 @@ footer{background:#040406;padding:80px 60px 40px;border-top:1px solid rgba(201,1
 <div class="toast" id="toast"></div>
 
 <script>
+
+  function toggleOrderType(){
+  const type = document.getElementById('order-type').value;
+  const addr = document.getElementById('address-field');
+
+  if(type === 'pickup'){
+    addr.style.display = 'none';
+  } else {
+    addr.style.display = 'block';
+  }
+}
+  
 // ── DATA ──
 const SK = 'aura_store_data';
 function getData() { try{const r=localStorage.getItem(SK);if(r)return JSON.parse(r);}catch(e){} return defaultData(); }
