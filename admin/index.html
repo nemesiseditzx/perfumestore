@@ -874,5 +874,222 @@ function flashMsg(id, msg) {
   setTimeout(()=>el.classList.remove('show'),3500);
 }
 </script>
+  <script>
+// ─── API CONFIG ───
+const API = "https://perfumestore-backend-production.up.railway.app";
+
+// ─── STORAGE KEYS (UNCHANGED) ───
+const STORAGE_KEY = 'aura_store_data';
+const AUTH_KEY = 'aura_admin_auth';
+const CREDS_KEY = 'aura_admin_creds';
+
+// ─── BACKEND STORAGE (UPDATED) ───
+async function getStoreData() {
+  try {
+    const res = await fetch(API + "/store");
+    return await res.json();
+  } catch(e){
+    console.error("API error:", e);
+    return getDefaultData();
+  }
+}
+
+async function saveStoreData(data) {
+  try {
+    await fetch(API + "/store", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+  } catch(e){
+    console.error("Save failed:", e);
+  }
+}
+
+// ─── CREDS (UNCHANGED) ───
+function getCreds() {
+  try { const r = localStorage.getItem(CREDS_KEY); if(r) return JSON.parse(r); } catch(e){}
+  return { username:'admin', password:'admin123' };
+}
+function saveCreds(c) { localStorage.setItem(CREDS_KEY, JSON.stringify(c)); }
+
+// ─── DEFAULT DATA (UNCHANGED) ───
+function getDefaultData() {
+  return {
+    settings:{storeName:'AURA'},
+    products:[],
+    orders:[]
+  };
+}
+
+// ─── LOGIN (UNCHANGED) ───
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const creds = getCreds();
+
+  if (u === creds.username && p === creds.password) {
+    localStorage.setItem(AUTH_KEY, '1');
+    document.getElementById('login-screen').style.display = 'none';
+    initDashboard();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem(AUTH_KEY);
+  location.reload();
+}
+
+if (localStorage.getItem(AUTH_KEY) === '1') {
+  document.getElementById('login-screen').style.display = 'none';
+  initDashboard();
+}
+
+// ─── NAV ───
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById('page-'+id).classList.add('active');
+
+  if(id==='dashboard') loadDashboard();
+  if(id==='orders') renderOrdersTable();
+  if(id==='products') renderProductsTable();
+  if(id==='inventory') renderInventoryTable();
+  if(id==='reports') loadReports();
+  if(id==='settings') loadSettingsForm();
+}
+
+// ─── DASHBOARD ───
+async function initDashboard() {
+  await loadDashboard();
+
+  const d = await getStoreData();
+  document.getElementById('sb-logo').textContent = d.settings.storeName || 'AURA';
+
+  setInterval(loadDashboard, 5000);
+}
+
+async function loadDashboard() {
+  const d = await getStoreData();
+  const orders = d.orders || [];
+
+  const revenue = orders.reduce((s,o)=>s+(o.total||0),0);
+
+  document.getElementById('kpi-revenue').textContent = '৳'+revenue;
+  document.getElementById('kpi-orders').textContent = orders.length;
+  document.getElementById('kpi-products').textContent = d.products.length;
+}
+
+// ─── ORDERS ───
+async function renderOrdersTable() {
+  const d = await getStoreData();
+  const list = d.orders || [];
+
+  const tbody = document.getElementById('orders-table');
+
+  if(!list.length){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">No orders</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(o=>`
+    <tr>
+      <td>${o.id}</td>
+      <td>${o.customer?.name||''}</td>
+      <td>${o.customer?.shop||''}</td>
+      <td>${o.items?.length||0}</td>
+      <td>৳${o.total||0}</td>
+      <td>${o.customer?.payment||''}</td>
+      <td>${o.date||''}</td>
+      <td>${o.status||''}</td>
+      <td>-</td>
+    </tr>
+  `).join('');
+}
+
+// ─── PRODUCTS (API CONNECTED) ───
+async function renderProductsTable() {
+  const res = await fetch(API + "/products");
+  const list = await res.json();
+
+  const tbody = document.getElementById('products-table');
+
+  if(!list.length){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No products found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(p=>`
+    <tr>
+      <td style="font-size:28px">${p.emoji||'🧴'}</td>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="tag">${p.cat}</span></td>
+      <td style="color:var(--gold);font-size:18px;">৳${p.price}</td>
+      <td>${p.moq}</td>
+      <td>${p.stock}</td>
+      <td><span class="status delivered">Active</span></td>
+      <td>-</td>
+    </tr>
+  `).join('');
+}
+
+// ─── INVENTORY ───
+async function renderInventoryTable() {
+  const d = await getStoreData();
+
+  document.getElementById('inventory-table').innerHTML =
+    d.products.map(p=>`
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.cat}</td>
+        <td>৳${p.price}</td>
+        <td>${p.stock}</td>
+        <td>
+          <input type="number" id="inv-${p.id}">
+          <button onclick="updateStock(${p.id})">Update</button>
+        </td>
+      </tr>
+    `).join('');
+}
+
+async function updateStock(id) {
+  const qty = parseInt(document.getElementById('inv-'+id).value);
+  const d = await getStoreData();
+
+  const p = d.products.find(x=>x.id===id);
+  if(p){
+    p.stock = qty;
+    await saveStoreData(d);
+    renderInventoryTable();
+  }
+}
+
+// ─── REPORTS ───
+async function loadReports() {
+  const d = await getStoreData();
+  const orders = d.orders || [];
+
+  document.getElementById('r-revenue').textContent =
+    '৳'+orders.reduce((s,o)=>s+(o.total||0),0);
+}
+
+// ─── SETTINGS ───
+async function loadSettingsForm() {
+  const d = await getStoreData();
+  document.getElementById('s-name').value = d.settings.storeName;
+}
+
+async function saveSettings() {
+  const d = await getStoreData();
+  d.settings.storeName = document.getElementById('s-name').value;
+
+  await saveStoreData(d);
+  alert("Saved!");
+}
+
+</script>
 </body>
 </html>
