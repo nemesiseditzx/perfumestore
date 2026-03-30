@@ -979,6 +979,27 @@ document.getElementById('co-body').innerHTML = `
     Place Order — $${cartTotal().toLocaleString()}
   </button>
 `;
+
+  const orderType = document.getElementById('order-type').value;
+
+const order = {
+  id: 'ORD-' + Date.now(),
+
+  type: orderType,
+
+  customer: {
+    name,
+    phone,
+    shop,
+    address: orderType === 'pickup' ? "Store Pickup" : addr,
+    payment: document.getElementById('n-pay').value
+  },
+
+  items: cart,
+  total: cartTotal(),
+  status: 'pending',
+  date: new Date().toISOString()
+};
     // SUCCESS
     cart=[];
     updateCart();
