@@ -810,7 +810,7 @@ function renderProducts(){
             <div class="pcard-name">${p.name}</div>
             <div class="pcard-desc">${p.desc||''}</div>
             <div class="pcard-price-row">
-              <div class="pcard-price">৳${p.price.toLocaleString()}</div>
+              <div class="pcard-price">$${p.price.toLocaleString()}</div>
               <div class="pcard-moq">MOQ ${p.moq}pcs</div>
             </div>
           </div>
@@ -820,7 +820,7 @@ function renderProducts(){
           <div class="pback-name">${p.name}</div>
           <div class="pback-cat">${p.cat.toUpperCase()}</div>
           <div class="pback-notes">${p.notes||p.desc||''}</div>
-          <div class="pback-price">৳${p.price.toLocaleString()}</div>
+          <div class="pback-price">$${p.price.toLocaleString()}</div>
           <div class="pback-moq">Min. Order: ${p.moq} pieces</div>
           <button class="add-btn" onclick="addToCart(${p.id})" ${oos?'disabled':''}>
             ${inCart?'✓ Added to Cart':oos?'Out of Stock':'Add to Cart'}
@@ -884,14 +884,14 @@ function renderCartPanel(){
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
         <button class="ci-del" onclick="removeFromCart(${i.id})">✕</button>
-        <div class="ci-price">৳${(i.price*i.qty).toLocaleString()}</div>
+        <div class="ci-price">$${(i.price*i.qty).toLocaleString()}</div>
       </div>
     </div>`).join('');
   cf.innerHTML=`
     <div class="cp-summary">
-      <div class="cs-row"><span>Items (${cartCount()})</span><span>৳${cartTotal().toLocaleString()}</span></div>
+      <div class="cs-row"><span>Items (${cartCount()})</span><span>$${cartTotal().toLocaleString()}</span></div>
       <div class="cs-row"><span>Delivery</span><span>To be confirmed</span></div>
-      <div class="cs-row tot"><span>Total</span><span>৳${cartTotal().toLocaleString()}</span></div>
+      <div class="cs-row tot"><span>Total</span><span>$${cartTotal().toLocaleString()}</span></div>
     </div>
     <button class="checkout-go" onclick="openCheckout()"><span>Proceed to Checkout →</span></button>`;
 }
@@ -902,13 +902,13 @@ function closeCart(){document.getElementById('co').classList.remove('on');docume
 // ── CHECKOUT ──
 function openCheckout(){
   closeCart();
-  const items=cart.map(i=>`<div class="co-sum-item"><span>${i.name} × ${i.qty}</span><span>৳${(i.price*i.qty).toLocaleString()}</span></div>`).join('');
+  const items=cart.map(i=>`<div class="co-sum-item"><span>${i.name} × ${i.qty}</span><span>$${(i.price*i.qty).toLocaleString()}</span></div>`).join('');
   document.getElementById('co-title').textContent='Place Your Order';
   document.getElementById('co-body').innerHTML=`
     <div class="co-summary">
       <div class="co-sum-title">Order Summary</div>
       ${items}
-      <div class="co-sum-total"><span>Total</span><span>৳${cartTotal().toLocaleString()}</span></div>
+      <div class="co-sum-total"><span>Total</span><span>$${cartTotal().toLocaleString()}</span></div>
     </div>
     <div class="co-grid">
       <div class="fg2"><label>Your Name *</label><input id="n-name" type="text" placeholder="Full name"></div>
@@ -923,7 +923,7 @@ function openCheckout(){
       </div>
     </div>
     <div class="fg2"><label>Notes (optional)</label><textarea id="n-notes" placeholder="Any special requests..."></textarea></div>
-    <button class="place-btn" onclick="placeOrder()">✓ Place Order — ৳${cartTotal().toLocaleString()}</button>`;
+    <button class="place-btn" onclick="placeOrder()">✓ Place Order — $${cartTotal().toLocaleString()}</button>`;
   document.getElementById('co-modal').classList.add('on');
   document.body.style.overflow='hidden';
 }
